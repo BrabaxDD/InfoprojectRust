@@ -25,6 +25,8 @@ dependencies = [
  "actix-web-lab",
  "actix-ws",
  "futures-util",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
