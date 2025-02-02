@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, App, HttpResponse,web, HttpServer, Responder};
 use std::path::Path;
 mod host;
 mod player;
@@ -13,6 +13,7 @@ async fn hello() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
+            .route("/game/server", web::get().to(host::ws))
             .service(hello)
             .service(actix_files::Files::new(
                 "/static",

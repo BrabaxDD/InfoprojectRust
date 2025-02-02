@@ -1,39 +1,26 @@
-use actix_web::{rt, web, App, Error, HttpRequest, HttpResponse, HttpServer};
-use actix_ws::AggregatedMessage;
+use actix_web::{middleware::Logger, web, App, HttpRequest, HttpServer, Responder};
+use actix_ws::Message;
+use futures_util::StreamExt;
 
-pub async fn echo(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
-    let (res, mut session, stream) = actix_ws::handle(&req, stream)?;
+pub async fn ws(req: HttpRequest, body: web::Payload) -> actix_web::Result<impl Responder> {
+    let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
 
-    let mut stream = stream
-        .aggregate_continuations()
-        // aggregate continuation frames up to 1MiB
-        .max_continuation_size(2_usize.pow(20));
-
-    // start task but don't wait for it
-    rt::spawn(async move {
-        // receive messages from websocket
-        while let Some(msg) = stream.next().await {
+    actix_web::rt::spawn(async move {
+        while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
-                Ok(AggregatedMessage::Text(text)) => {
-                    // echo text message
-                    session.text(text).await.unwrap();
+                Message::Ping(bytes) => {
+                    if session.pong(&bytes).await.is_err() {
+                        return;
+                    }
                 }
-
-                Ok(AggregatedMessage::Binary(bin)) => {
-                    // echo binary message
-                    session.binary(bin).await.unwrap();
-                }
-
-                Ok(AggregatedMessage::Ping(msg)) => {
-                    // respond to PING frame with PONG frame
-                    session.pong(&msg).await.unwrap();
-                }
-
-                _ => {}
+                Message::Text(msg) => println!("Got text: {msg}"),
+                _ => break,
             }
         }
+
+        let _ = session.close(None).await;
     });
 
-    // respond immediately with response connected to WS session
-    Ok(res)
+    Ok(response)
 }
+
