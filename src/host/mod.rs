@@ -1,10 +1,11 @@
-use actix_web::{ web, HttpRequest, Responder};
+use actix_web::{web, HttpRequest, Responder};
+use std::thread;
+use log::info;
 use actix_ws::Message;
 use futures_util::StreamExt;
-use std::time::{SystemTime, UNIX_EPOCH};
-use serde_json::{Value,Map};
+use serde_json::{Map, Value};
 use std::collections::HashMap;
-
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub async fn ws(req: HttpRequest, body: web::Payload) -> actix_web::Result<impl Responder> {
     let (response, mut session, mut msg_stream) = actix_ws::handle(&req, body)?;
@@ -22,10 +23,16 @@ pub async fn ws(req: HttpRequest, body: web::Payload) -> actix_web::Result<impl 
                 }
                 Message::Text(msg) => {
                     println!("Got text: {msg}");
-                    let typeMap: HashMap<String, Value> = serde_json::from_str(&msg).unwrap();
+                    let typeMap: HashMap<String, Value> = serde_json::from_str(&msg).unwrap();//die hasmap enthält die Subjekte der ershiedenen Atrribute der Json root
                     match typeMap.get("type") {
-                        Some(Value::String(str)) => {
-                            println!("{}",str)
+                        Some(Value::String(string)) => {
+                            match string.as_str() {
+                                "startserver" => {
+                                    info!("new Server started with ID {}",string);
+                                    let serverThreatHandler = thread::spawn(||{});
+                                }
+                                _ => {}
+                            }
                         }
                         _ => {}
                     }
