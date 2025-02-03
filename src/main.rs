@@ -2,11 +2,12 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use std::path::Path;
 use std::sync::mpsc::{Receiver, Sender};
 use std::sync::Mutex;
-use channel_dispatcher::ChannelDispatcher;
-mod channel_dispatcher;
+//use channel_dispatcher::ChannelDispatcher;
+//mod channel_dispatcher;
 mod message;
 mod host;
 mod player;
+mod server_event_bus;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -16,7 +17,7 @@ async fn hello() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let counter = web::Data::new(Appstate {
-        dispatcher: Mutex::new(channel_dispatcher::ChannelDispatcher::new()),
+        serverEventBus: Mutex::new(server_event_bus::ServerEventBus::new()),
     });
     HttpServer::new(move || {
         App::new()
@@ -34,5 +35,5 @@ async fn main() -> std::io::Result<()> {
 }
 
 struct Appstate {
-    dispatcher: Mutex<channel_dispatcher::ChannelDispatcher>,
+    serverEventBus: Mutex<server_event_bus::ServerEventBus>,
 }

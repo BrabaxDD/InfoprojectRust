@@ -1,4 +1,5 @@
 use super::Appstate;
+use std::sync::mpsc::*;
 use actix_web::Handler;
 use actix_web::HttpResponse;
 use actix_web::{web, HttpRequest, Responder};
@@ -10,7 +11,6 @@ use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::thread;
 use std::time::{SystemTime, UNIX_EPOCH};
-use super::channel_dispatcher::ChannelDispatcher;
 mod host_server;
 
 
@@ -23,7 +23,9 @@ pub async fn ws(
     let a = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("time went backwards");
-    let mut dispatcher = data.dispatcher.lock().unwrap();
+    let mut server_event_bus = data.serverEventBus.lock().unwrap();
+    let (_sender_self,receiver_event_bus) = channel();
+    let _receiver_self = server_event_bus.registerListner(receiver_event_bus);
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
@@ -43,7 +45,6 @@ pub async fn ws(
                                 match server_id_value {
                                     Some(Value::String(string)) => {
                                         let server = HostServer::new(0);
-                                        server.register_as_channel_receiver(&mut dispatcher);
                                         let _server_threat_handler = 
                                             thread::spawn(HostServer::getRunMethod(server));
                                     }
@@ -63,7 +64,6 @@ pub async fn ws(
 
         let _ = session.close(None).await;
     });
-    drop(dispatcher);
 
     Ok(response)
 }

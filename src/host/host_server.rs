@@ -1,4 +1,3 @@
-use super::super::channel_dispatcher::ChannelDispatcher;
 use std::sync::{mpsc,MutexGuard};
 
 use super::super::message::Message;
@@ -13,9 +12,4 @@ impl HostServer {
             println!("server running with id {}",self.id);
         }
     }
-    pub fn register_as_channel_receiver(&self,dispatcher: &mut MutexGuard<'_, ChannelDispatcher>){
-        let (sender,receiver) = mpsc::channel();
-        dispatcher.registerChannelReceiver(self.id,sender);
-    }
-
 }
