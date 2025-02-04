@@ -1,6 +1,6 @@
 use std::sync::{mpsc,MutexGuard};
 
-use super::super::message::Message;
+use super::super::message::Message_event_bus;
 
 pub struct HostServer {id:i32}
 impl HostServer {

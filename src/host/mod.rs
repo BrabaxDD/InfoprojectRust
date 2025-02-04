@@ -1,5 +1,5 @@
+use super::message::Message_event_bus;
 use super::Appstate;
-use std::sync::mpsc::*;
 use actix_web::Handler;
 use actix_web::HttpResponse;
 use actix_web::{web, HttpRequest, Responder};
@@ -9,10 +9,10 @@ use host_server::HostServer;
 use log::info;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
+use std::sync::mpsc::*;
 use std::thread;
 use std::time::{SystemTime, UNIX_EPOCH};
 mod host_server;
-
 
 pub async fn ws(
     data: web::Data<Appstate>,
@@ -24,8 +24,8 @@ pub async fn ws(
         .duration_since(UNIX_EPOCH)
         .expect("time went backwards");
     let mut server_event_bus = data.serverEventBus.lock().unwrap();
-    let (_sender_self,receiver_event_bus) = channel();
-    let _receiver_self = server_event_bus.registerListner(receiver_event_bus);
+    let (sender_self, receiver_event_bus) = channel();
+    let receiver_self = server_event_bus.registerListner(receiver_event_bus);
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
@@ -44,9 +44,7 @@ pub async fn ws(
                                 let server_id_value = typeMap.get("serverID");
                                 match server_id_value {
                                     Some(Value::String(string)) => {
-                                        let server = HostServer::new(0);
-                                        let _server_threat_handler = 
-                                            thread::spawn(HostServer::getRunMethod(server));
+                                        let _server_threat_handler = sender_self.send(Message_event_bus::StartServer(string.to_string()));
                                     }
                                     _ => {}
                                 }
@@ -60,7 +58,6 @@ pub async fn ws(
                 _ => break,
             }
         }
-
 
         let _ = session.close(None).await;
     });
