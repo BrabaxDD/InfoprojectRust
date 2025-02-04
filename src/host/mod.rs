@@ -23,9 +23,6 @@ pub async fn ws(
     let a = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("time went backwards");
-    let mut server_event_bus = data.serverEventBus.lock().unwrap();
-    let (sender_self, receiver_event_bus) = channel();
-    let receiver_self = server_event_bus.registerListner(receiver_event_bus);
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
             match msg {
@@ -38,13 +35,21 @@ pub async fn ws(
                     println!("Got text: {msg}");
                     let typeMap: HashMap<String, Value> = serde_json::from_str(&msg).unwrap(); //die hasmap enthält die Subjekte der ershiedenen Atrribute der Json root
                     match typeMap.get("type") {
-                        Some(Value::String(string)) => match string.as_str() {
+                        Some(Value::String(message_type)) => match message_type.as_str() {
                             "startserver" => {
-                                info!("new Server started with ID {}", string);
                                 let server_id_value = typeMap.get("serverID");
                                 match server_id_value {
                                     Some(Value::String(string)) => {
-                                        let _server_threat_handler = sender_self.send(Message_event_bus::StartServer(string.to_string()));
+                                        let id = string;
+                                        let mut server_event_bus =
+                                            data.serverEventBus.lock().unwrap();
+                                        let (host_channel_sender, host_channel_receiver) =
+                                            std::sync::mpsc::channel::<Message_event_bus>();
+                                        server_event_bus.register_sender_by_id(
+                                            host_channel_sender,
+                                            id.to_string(),
+                                        );
+                                        std::thread::spawn(HostServer::new(id.to_string()).getRunMethod(host_channel_receiver));
                                     }
                                     _ => {}
                                 }
