@@ -18,7 +18,6 @@ pub async fn ws(
 
     actix_web::rt::spawn(async move {
         while let Some(Ok(msg)) = msg_stream.next().await {
-            println!("got message");
             match msg {
                 Message::Ping(bytes) => {
                     if session.pong(&bytes).await.is_err() {
