@@ -1,4 +1,5 @@
 use std::sync::{mpsc, MutexGuard};
+use std::time::Instant;
 
 use super::super::message::Message_event_bus;
 
@@ -15,15 +16,16 @@ impl HostServer {
     ) -> impl FnOnce() {
         move || {
             println!("server running with id {}", self.id);
+            let mut last_time = Instant::now();
             loop {
                 for message in &receiver {
                     match message {
-                        Message_event_bus::PlayerLogin(player_id) => {
-                            println!("received Message from Client")
+                        Message_event_bus::PlayerLogin(player_id,to_client_sender) => {
                         }
                     }
                 }
-                //receiver.recv().unwrap();
+                let elapsed = last_time.elapsed();
+                last_time = Instant::now()
             }
         }
     }

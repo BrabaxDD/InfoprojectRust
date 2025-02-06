@@ -35,14 +35,19 @@ pub async fn ws(
                                 "login" => {
                                     let server_id = typeMap.get("serverID");
                                     if let Some(serde_json::Value::String(server_id)) = server_id {
-                                        let mut server_event_bus =
-                                            data.serverEventBus.lock().unwrap();
-                                        let host_sender_result = server_event_bus
-                                            .get_sender_by_id(server_id.to_string());
-                                        if let Some(host_sender) = host_sender_result {
-                                            host_sender.send(Message_event_bus::PlayerLogin(
-                                                "hallo".to_string(),
-                                            ));
+                                        if let Some(serde_json::Value::Number(player_id)) =
+                                            typeMap.get("ID")
+                                        {
+                                            let mut server_event_bus =
+                                                data.serverEventBus.lock().unwrap();
+                                            let to_host_sender_result = server_event_bus
+                                                .get_sender_by_id(server_id.to_string());
+                                            let (to_me_sender,from_host_receiver) = std::sync::mpsc::channel();
+                                            if let Some(host_sender) = host_sender_result {
+                                                to_host_sender.send(Message_event_bus::PlayerLogin(
+                                                    player_id.to_string(),to_me_sender
+                                                ));
+                                            }
                                         }
                                     }
                                 }
