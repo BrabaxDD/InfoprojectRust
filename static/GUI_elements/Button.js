@@ -1,9 +1,7 @@
 import GameObject from "../GameObject.js"
-import { loginToServer } from "../game.js"
-import { loginToServerHost } from "../game.js"
-import { generateItem } from "../game.js"
-import { font } from "../game.js"
+import { settings } from "../game.js"
 import Inventory from "./Inventory.js"
+import { websocketObject} from "../game.js"
 
 export default class ButtonGameObject extends GameObject {
     constructor(posx, posy, widthButton, heightButton, eventString, eventObject, scene, text) {
@@ -25,10 +23,10 @@ export default class ButtonGameObject extends GameObject {
         this.scene.eventBus.registerListner("optionSelected", this)
         this.is_hovered = false
         this.text = text
-        this.textSize = font
+        this.textSize = settings.font
         this.textColor = "black"
-        this.ButtonPrimaryColor = "green"
-        this.ButtonScondaryColor = "yellow"
+        this.ButtonPrimaryColor = settings.primaryColor
+        this.ButtonScondaryColor = settings.secondaryColor
         this.eventObject = eventObject
         this.textOfLoginField = ""
         this.textOfCraftField = ""
@@ -74,27 +72,37 @@ export default class ButtonGameObject extends GameObject {
 
         this.ctx.fillText(this.text, this.posx + (this.widhtButton / 2), this.posy + (this.heightButton / 2));
         //this.ctx.strokeText(text, this.posx+(this.widhtButton / 2), this.posy+(this.heightButton / 2));
+
+        //Pop up next to recipie selection
+        if (this.eventString == "selectRecipe" && this.is_hovered) {
+            this.ctx.fillStyle = this.ButtonPrimaryColor;
+            this.ctx.fillRect(this.posx + this.widhtButton, this.posy - this.heightButton / 2 , this.widhtButton, 2*this.heightButton)
+            this.ctx.strokeStyle = this.textColor;
+            this.ctx.fillStyle = this.textColor;
+            this.ctx.fillText(this.eventObject.requires, this.posx + (3*this.widhtButton / 2), this.posy );
+            this.ctx.fillText("-> "+this.eventObject.produces, this.posx + (3*this.widhtButton / 2), this.posy + (this.heightButton));
+        }
     }
 
     buttonPresed(eventObject) {
         //this.scene.eventBus.triggerEvent("test",null)
         if (this.eventString == "switchScene") {
             this.scene.eventBus.triggerEvent("switchScene", eventObject)
-            console.log(eventObject.sceneToSwitch)
         }
         if (this.eventString == "loginToServer") {
             if (this.serverToLogin != undefined) {
-                loginToServer(this.serverToLogin)
+                let loginID = Math.floor(Math.random() * 3000000001)
+                websocketObject.loginToServer(this.serverToLogin, loginID)
             }
 
         }
         if (this.eventString == "loginToServerHost") {
-            if (self.textOfTextField != "") {
-                loginToServerHost(this.textOfLoginField)
+            if (this.textOfLoginField != "") {
+                websocketObject.loginToServerHost(this.textOfLoginField)
             }
         }
         if (this.eventString == "generateItem") {
-            generateItem(eventObject)
+            websocketObject.generateItem(eventObject)
         }
         if (this.eventString == "combineStacks") {
             this.scene.eventBus.triggerEvent("combineStacks", eventObject)
@@ -109,11 +117,17 @@ export default class ButtonGameObject extends GameObject {
             this.scene.eventBus.triggerEvent("craftsticks", eventObject)
         }
         if (this.eventString == "CraftRequest") {
-            if (self.textOfTextField != "") {
+            if (this.textOfCraftField != "") {
                 this.scene.eventBus.triggerEvent("CraftRequest", { recipe: this.textOfCraftField })
             }
             else {
             }
+        }
+        if (this.eventString == "increaseQuantity"){
+            this.scene.eventBus.triggerEvent("increaseQuantity", eventObject)
+        }
+        if (this.eventString == "decreaseQuantity"){
+            this.scene.eventBus.triggerEvent("decreaseQuantity", eventObject)
         }
         if (this.eventString == "equipItem") {
             this.scene.eventBus.triggerEvent("equipItem", eventObject)
@@ -142,7 +156,7 @@ export default class ButtonGameObject extends GameObject {
     setTextSize(size) {
         this.textSize = size
     }
-
+ 
     setTextColor(color) {
         this.textColor = color
     }

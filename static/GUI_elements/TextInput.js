@@ -1,5 +1,5 @@
 import GameObject from "../GameObject.js";
-import { font } from "../game.js";
+import { settings } from "../game.js";
 
 export default class CanvasTextInput extends GameObject{
     constructor(scene, posx, posy, widthButton, heightButton,eventString, focusedOnCreation) {
@@ -10,7 +10,7 @@ export default class CanvasTextInput extends GameObject{
         this.inputText = ''; 
         this.isFocused = (focusedOnCreation == true) ? true : false;
         this.storedText = ""; 
-        this.textSize = font;
+        this.textSize = settings.font;
         
         this.posx = posx//100
         this.posy = posy//50
@@ -49,7 +49,6 @@ export default class CanvasTextInput extends GameObject{
 
         if (event.key === 'Enter') {
             this.storedText = this.inputText; 
-            console.log('Stored Text:', this.storedText);
             //this.inputText = ''; 
             this.scene.eventBus.triggerEvent(this.eventString,{storedText:this.storedText})
         } else if (event.key === 'Backspace') {
@@ -65,7 +64,7 @@ export default class CanvasTextInput extends GameObject{
    
     render() {
        
-        this.ctx.strokeStyle = this.isFocused ? 'blue' : 'black';
+        this.ctx.strokeStyle = this.isFocused ? settings.textInputFocusedColor : settings.textInputUnFocusedColor;
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(this.posx, this.posy, this.widthBox, this.heightBox);
         
@@ -75,11 +74,11 @@ export default class CanvasTextInput extends GameObject{
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(this.inputText, this.posx + (this.widthBox/2), this.posy + (this.heightBox / 2));
 
-        // Optional: Draw stored text for debugging
-        if (this.storedText !== null) {
+        //  Draw stored text for debugging
+        /*if (this.storedText !== null) {
             this.ctx.fillStyle = 'gray';
             this.ctx.fillText(`Stored: ${this.storedText}`, this.posx, this.posy + this.heightBox + 20);
-        }
+        }*/
     }
 }
 

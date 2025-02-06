@@ -1,3 +1,4 @@
+import { settings } from "./game.js"
 import GameObject from "./GameObject.js"
 
 export default class Wall extends GameObject {
@@ -18,12 +19,12 @@ export default class Wall extends GameObject {
     }
 
     render() {
-        this.ctx.fillStyle = "black";
+        this.ctx.fillStyle = settings.wallColor;
         if (this.isToRenderPart1 == true && this.isToRenderPart2 == true) {
             this.ctx.beginPath()
             this.ctx.moveTo(this.posx - (this.scene.camera.posx - this.scene.camera.cameraWidth / 2), this.posy - (this.scene.camera.posy - this.scene.camera.cameraHeight / 2))
             this.ctx.lineTo(this.posx2 - (this.scene.camera.posx - this.scene.camera.cameraWidth / 2), this.posy2 - (this.scene.camera.posy - this.scene.camera.cameraHeight / 2))
-            this.ctx.strokeStyle = "black"
+            this.ctx.strokeStyle = settings.wallColor
             this.ctx.lineWidth = this.thickness
             this.ctx.stroke()
         }

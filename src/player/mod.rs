@@ -1,3 +1,4 @@
+use super::message::Message_event_bus;
 use super::Appstate;
 use actix_web::{web, HttpRequest, Responder};
 use actix_ws::Message;
@@ -32,9 +33,18 @@ pub async fn ws(
                             let message_type_converted = &message_type[..];
                             match message_type_converted {
                                 "login" => {
-                                    let server_id = typeMap.get("serverID").unwrap();
-                                    let mut server_event_bus = data.serverEventBus.lock().unwrap();
-                                    server_event_bus.get_sender_by_id(server_id.to_string());
+                                    let server_id = typeMap.get("serverID");
+                                    if let Some(serde_json::Value::String(server_id)) = server_id {
+                                        let mut server_event_bus =
+                                            data.serverEventBus.lock().unwrap();
+                                        let host_sender_result = server_event_bus
+                                            .get_sender_by_id(server_id.to_string());
+                                        if let Some(host_sender) = host_sender_result {
+                                            host_sender.send(Message_event_bus::PlayerLogin(
+                                                "hallo".to_string(),
+                                            ));
+                                        }
+                                    }
                                 }
                                 _ => {}
                             }

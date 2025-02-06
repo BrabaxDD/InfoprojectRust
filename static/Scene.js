@@ -3,11 +3,16 @@ import SceneSwitcher from "./SceneSwitcher.js"
 import TileMap from "./images/TileMap.js"
 import ImageLoader from "./images/ImageLoader.js"
 import Camera from "./Camera.js"
+import Inventory from "./GUI_elements/Inventory.js"
+import { settings } from "./game.js"
+import CraftingMenu from "./GUI_elements/CraftingMenu.js"
+import ErrorHandler from "./ErrorHandler.js"
 
 export default class Scene {
     constructor(canvasObjectScene, mapName) {
         this.eventBus = new EventBus()
         this.sceneSwitcher = new SceneSwitcher(this)
+        this.errorHandler = new ErrorHandler(this)
         this.gameObjects = []
         this.toAdd = []
         this.toDelete = []
@@ -17,6 +22,8 @@ export default class Scene {
 
         this.camera = new Camera(this)
 
+
+        this.eventBus.registerListner("keydown", this)
 
         // Initialize the image loader
         this.imageLoader = new ImageLoader();
@@ -28,6 +35,9 @@ export default class Scene {
         this.eventBus.registerListner("keydown", this)
         this.eventBus.registerListner("mouseDown", this)
         this.eventBus.registerListner("deletedGameObject", this)
+        this.eventBus.registerListner("createInv", this)
+        this.eventBus.registerListner("createCraftMenu", this)
+        this.eventBus.registerListner("eventBoxClicked", this)
 
         this.canvas.addEventListener('mousemove', (event) => {
             // Get the bounding rectangle of the canvas
@@ -41,6 +51,9 @@ export default class Scene {
         this.keys = {}; // Object to track key states
         this.mouseDown = false
         this.mouseJustDown = false
+
+        this.playerInv = undefined
+        this.craftMenu = undefined
     }
 
     addObject(object) {
@@ -50,10 +63,8 @@ export default class Scene {
             this.mainPlayerID = object.playerID
             this.eventBus.triggerEvent("playerSet", this.mainPlayerID)
             this.playerIndex = this.gameObjects.length + this.toAdd.length - 1
-            console.log(object)
-            console.log(object.playerID)
             console.log("Main Player ID: " + this.mainPlayerID + "  Player Index in Game objects: " + this.playerIndex)
-            console.log(this.gameObjects)
+            //console.log(this.gameObjects)
             this.camera.setLockedPlayer(object)
         }
     }
@@ -74,10 +85,22 @@ export default class Scene {
         let len = this.gameObjects.length;
         for (let i = 0; i < len; i++) {
             //if (i != this.playerIndex && i!= this.tileMapIndex){
+            if (this.gameObjects[i] === this.inv || this.gameObjects[i] === this.craftMenu) {
+                continue
+            }
             this.gameObjects[i].render();
             //}
 
         }
+
+        if (this.playerInv != undefined) {
+            this.playerInv.render()
+        }
+
+        if (this.craftMenu != undefined) {
+            this.craftMenu.render()
+        }
+
     }
 
     process() {
@@ -88,11 +111,10 @@ export default class Scene {
 
 
         if (this.toDelete.length != 0) {
-            console.log(this.toDelete)
             this.gameObjects = this.gameObjects.filter(el =>
                 this.toDelete.indexOf(el) < 0
             );
-            console.log(this.gameObjects)
+           // console.log(this.gameObjects)
             this.toDelete = [];
 
             const length = this.gameObjects.length
@@ -101,7 +123,7 @@ export default class Scene {
                     this.playerIndex = i
                 }
             }
-            console.log(this.gameObjects)
+            //console.log(this.gameObjects)
         }
 
         let len_add = this.toAdd.length
@@ -127,6 +149,20 @@ export default class Scene {
     }
 
     event(eventString, eventObject) {
+        if (eventString == "createInv") {
+            this.playerInv = new Inventory(this)
+            this.addObject(this.playerInv)
+
+        }
+        if (eventString == "createCraftMenu") {
+            const recipes = [
+                { name: "Wood", image: "wooden-stick.png", requires:"7 Sticks", produces: "3 Wood"},
+                { name: "Stone Axe", image: "stone-axe.png" },
+                { name: "Iron Sword", image: "iron-sword.png" },
+            ];
+            this.craftMenu = new CraftingMenu(this, 50, 50, recipes)
+            this.addObject(this.craftMenu)
+        }
         if (eventString == "keydown") {
             this.keys[eventObject.key] = eventObject.status;
         }
@@ -140,19 +176,21 @@ export default class Scene {
 
         }
         if (eventString == "deletedGameObject") {
-            console.log("Trying to Delete Object: " + eventObject.ID + "  " + eventObject.type)
-            console.log(eventObject)
+            //console.log(eventObject)
             const length = this.gameObjects.length
             for (let i = 0; i <= length; i++) {
                 if (this.gameObjects[i].ID === eventObject.ID) {
-                    console.log("OBJECT TO DELETE: ID: ", eventObject.ID, " Type: ", eventObject.type)
-                    console.log("OBJECT THAT IS DELETED: Typ: " + this.gameObjects[i].constructor.name)
+                    //console.log("OBJECT TO DELETE: ID: ", eventObject.ID, " Type: ", eventObject.type)
+                    //console.log("OBJECT THAT IS DELETED: Typ: " + this.gameObjects[i].constructor.name)
                     this.removeObject(this.gameObjects[i])
-                    console.log(this.gameObjects[i])
+                    //console.log(this.gameObjects[i])
                     break
                 }
             }
 
+        }
+        if (eventString == "eventBoxClicked"){
+            this.removeObject(eventObject.box)
         }
     }
 

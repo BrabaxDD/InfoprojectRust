@@ -5,12 +5,12 @@ import GameObject from "./GameObject.js";
 import CanvasTextInput from "./GUI_elements/TextInput.js";
 import TileMap from "./images/TileMap.js";
 import Tree from "./tree.js"
-import { getMainPlayerID } from "./game.js";
+import { websocketObject } from "./game.js";
 import Inventory from "./GUI_elements/Inventory.js";
-import { getServerID } from "./game.js"
 import Dropdown from "./GUI_elements/Dropdown.js"
 import CreateGameMenu from "./GUI_elements/CreateGameMenu.js";
-
+import CraftingMenu from "./GUI_elements/CraftingMenu.js";
+import WebsocketGameObjectClient from "./WebsocketGameObject.js";
 export default class GameSceneFactory extends GameObject {
     constructor(canvas, keys, sceneObject) {
         super(sceneObject)
@@ -31,11 +31,19 @@ export default class GameSceneFactory extends GameObject {
                 let button2 = new ButtonGameObject(this.canvas.width / 2 - 100, this.canvas.height / 3 * 2 - 28, 200, 56, "switchScene", { sceneToSwitch: "optionsMenu" }, scene, "Options")
                 scene.addObject(button2)
 
+                const recipes = [
+                                                { name: "Wood", image: "wooden-stick.png" },
+                                                { name: "Stone Axe (not working)", image: "stone-axe.png" },
+                                                { name: "Iron Sword (not working)", image: "iron-sword.png" },
+                                            ];
+                const inv = new CraftingMenu(scene,50, 50, recipes)
+                scene.addObject(inv)
 
                 //let HostTest = new ButtonGameObject(this.canvas.width/3*2-100,this.canvas.height/5 -28,200,56,"loginToServerHost",{},scene,"Login as host ((test for message))")
               //scene.addObject(HostTest)
 
                 //console.log(button.eventObject.sceneToSwitch)
+
                 break;
 
             case "optionsMenu":
@@ -48,10 +56,9 @@ export default class GameSceneFactory extends GameObject {
 
             case "game":
             case 2:
-                scene = new Scene(this.canvas, getServerID() + ".txt");
-                console.log("log: trying to get Tile Map with name" + getServerID() + ".txt")
-                let craftinput = new CanvasTextInput(scene, this.canvas.width - 200, this.canvas.height - 30, 200, 30, "textInputFinishedCraftField")
-                scene.addObject(craftinput)
+                scene = new Scene(this.canvas, websocketObject.getServerID() + ".txt");
+                scene.eventBus.triggerEvent("createInv")
+                scene.eventBus.triggerEvent("createCraftMenu")
                 
                 //let tree = new Tree(scene)
                 //scene.addObject(tree)
@@ -69,14 +76,13 @@ export default class GameSceneFactory extends GameObject {
                 
             case "waitForLogin":
             case 4:
-                console.log("Create WaitFOrLogin")
                 scene = new Scene(this.canvas, "")
                 let but = new ButtonGameObject(this.canvas.width / 2 - 100, this.canvas.height / 3 - 28, 200, 56, "", {}, scene, "WAIT A BIT")
                 scene.addObject(but)
 
                 break;
         }
-        console.log(scene.gameObjects)
+        //console.log(scene.gameObjects)
         return scene
     }
 

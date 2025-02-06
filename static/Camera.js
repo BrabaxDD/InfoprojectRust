@@ -1,4 +1,5 @@
 import GameObject from "./GameObject.js"
+import { settings } from "./game.js"
 
 export default class Camera extends GameObject{
     constructor(scene){
@@ -15,7 +16,7 @@ export default class Camera extends GameObject{
 
         this.lockedPlayer = null
 
-        this.cullingDisance = 600//((this.cameraHeight < this.cameraWidth) ? this.cameraWidth : this.cameraHeight)
+        this.cullingDisance = settings.cullinDistance//((this.cameraHeight < this.cameraWidth) ? this.cameraWidth : this.cameraHeight)
     }
 
     /*

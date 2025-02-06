@@ -11,10 +11,10 @@ export default class ImageLoader {
         }
 
         const img = new Image();
-        img.src = `/static/images/${fileName}`; // Adjust based on static file location
+        img.src = `/static/images/${fileName}`;
 
         img.onload = () => {
-            this.cache.set(fileName, img); // Cache the loaded image
+            this.cache.set(fileName, img); 
             onLoadCallback(img);
         };
 

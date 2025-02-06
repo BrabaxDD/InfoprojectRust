@@ -1,9 +1,7 @@
 import GameObject from "./GameObject.js"
-import { hit } from "./game.js"
-import { addTestInv } from "./game.js"
+import { settings } from "./game.js"
 import Inventory from "./GUI_elements/Inventory.js"
-import { font } from "./game.js"
-import { interact } from "./game.js"
+import { websocketObject } from "./game.js"
 
 
 export default class Player extends GameObject {
@@ -32,14 +30,14 @@ export default class Player extends GameObject {
         this.hp = 999999
 
         
-        this.inventory = new Inventory(this.scene)
-        this.scene.addObject(this.inventory)
+        //this.inventory = new Inventory(this.scene)
+        //this.scene.addObject(this.inventory)
         
         console.log("my ID: ", this.playerID, " serverPlayerID: ", this.scene.mainPlayerID)
     }
 
     process() {
-        if (this.scene.keys['ArrowUp']) {
+        if (this.scene.keys[settings.forwardKey]) {
             this.up = true
             if (this.posy > 0) { }
             //this.posy -= this.speed; // Move up
@@ -48,7 +46,7 @@ export default class Player extends GameObject {
         }
 
 
-        if (this.scene.keys['ArrowDown']) {
+        if (this.scene.keys[settings.backKey]) {
             this.down = true
             if (this.posy < this.canvas.height - this.height) {
                 //this.posy += this.speed; // Move down
@@ -57,14 +55,14 @@ export default class Player extends GameObject {
             this.down = false
         }
 
-        if (this.scene.keys['ArrowLeft']) {
+        if (this.scene.keys[settings.leftKey]) {
             this.left = true
             if (this.posx > 0) {
                 //this.posx -= this.speed; // Move left
             }
         } else { this.left = false }
 
-        if (this.scene.keys['ArrowRight']) {
+        if (this.scene.keys[settings.rightKey]) {
             this.right = true
             if (this.posx < this.canvas.width - this.width) {
                 //this.posx += this.speed; // Move right
@@ -74,22 +72,26 @@ export default class Player extends GameObject {
             this.right = false
         }
 
-        if (this.scene.keys['h'] == true && this.onCooldown <= 0) {
-            hit()
+        if (this.scene.keys[settings.hitKey] == true && this.onCooldown <= 0) {
+            websocketObject.hit()
             //addTestInv()
             this.onCooldown = 10
         }
-        if (this.scene.keys['g'] == true) {
-            interact()
+        if (this.scene.keys[settings.interactKey] == true) {
+            websocketObject.interact()
         }
 
         if (this.onCooldown >= 0){
             this.onCooldown -= 1
         }
+
+        if (this.scene.keys["t"] == true) {
+            this.scene.eventBus.triggerEvent("alert", {text:"Player triggered alert"})
+        }
     }
 
     render() {
-        this.ctx.fillStyle = "blue";
+        this.ctx.fillStyle = settings.playerColor;
         this.ctx.fillRect(this.posx - (this.scene.camera.posx - this.scene.camera.cameraWidth / 2), this.posy - (this.scene.camera.posy - this.scene.camera.cameraHeight / 2), this.width, this.height);
 
 
@@ -104,14 +106,14 @@ export default class Player extends GameObject {
             const xHealth = heightHealth/2
             const yHealth = heightHealth/2
 
-            this.ctx.fillStyle = "green";
+            this.ctx.fillStyle = settings.primaryColor;
             this.ctx.globalAlpha = 0.4;
             this.ctx.fillRect(xHealth, yHealth, widthHealth, heightHealth);
             this.ctx.globalAlpha = 1;
 
             this.ctx.fillStyle = 'black';
 
-            this.ctx.font = font;
+            this.ctx.font = settings.font;
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(healthString, xHealth + widthHealth / 2, yHealth + heightHealth / 2);
         }
@@ -122,8 +124,6 @@ export default class Player extends GameObject {
             this.posy = eventObject.posy
         }
         if (eventString == "healthUpdate" && eventObject.type == "Player" && eventObject.ID == this.playerID) {
-            console.log("HEALTH UUPDATATET" + eventObject.HP)
-            console.log(eventObject)
             this.hp = eventObject.HP
         }
     }

@@ -1,6 +1,4 @@
 import GameObject from "./GameObject.js"
-import { hit } from "./game.js"
-import { addTestInv } from "./game.js"
 import Inventory from "./GUI_elements/Inventory.js"
 
 export default class Zombie extends GameObject {
@@ -26,10 +24,5 @@ export default class Zombie extends GameObject {
         
     }
     process(){}
-
-
-
-
-
 
 }

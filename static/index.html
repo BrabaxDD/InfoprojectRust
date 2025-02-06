@@ -1,26 +1,39 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
+{% load static %}
 
 
 <html>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Canvas Game</title>
-        <style>
-            canvas {
-                border: 1px solid black;
-                display: block;
-                margin: auto;
-            }
-        </style>
-    </head>
+<head>
+    <link rel="stylesheet" href="/static/styles/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super InfoGame</title>
+</head>
 
-    <body>
-        
+<body style="background-color:#173F5F;">
 
-        <canvas id="gameCanvas" width="800" height="800"></canvas>
-        <button id="clickMeButton">Click me!</button>
-        <script type="module" src="../static/game.js"></script>
-    </body>
-</html> 
+
+    <div class="container">
+        <div class="text-box-container">
+            <div class="text-box">
+                <p>Current Server: </p>
+            </div>
+
+            <div class="text-box">
+                <p>Current Status of connection: </p>
+            </div>
+
+            <div class="text-box">
+                <p>Controls: ERROR</p>
+            </div>
+        </div>
+        <div class="canvas-container">
+            <canvas id="gameCanvas" width="800" height="800"></canvas>
+        </div>
+    </div>
+    <script type="module" src="../static/game.js"></script>
+
+</body>
+
+</html>

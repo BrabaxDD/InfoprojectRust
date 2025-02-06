@@ -40,16 +40,16 @@ pub async fn ws(
                                 let server_id_value = typeMap.get("serverID");
                                 match server_id_value {
                                     Some(Value::String(string)) => {
-                                        let id = string;
+                                        let host_id = string;
                                         let mut server_event_bus =
                                             data.serverEventBus.lock().unwrap();
                                         let (host_channel_sender, host_channel_receiver) =
                                             std::sync::mpsc::channel::<Message_event_bus>();
                                         server_event_bus.register_sender_by_id(
                                             host_channel_sender,
-                                            id.to_string(),
+                                            host_id.to_string(),
                                         );
-                                        std::thread::spawn(HostServer::new(id.to_string()).getRunMethod(host_channel_receiver));
+                                        std::thread::spawn(HostServer::new(host_id.to_string()).getRunMethod(host_channel_receiver));
                                     }
                                     _ => {}
                                 }
