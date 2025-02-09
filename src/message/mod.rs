@@ -6,3 +6,5 @@ pub enum Message_event_bus {
 }
 
 pub enum Message_event_bus_to_client {}
+
+pub enum Message_event_bus_websocket_to_host {}

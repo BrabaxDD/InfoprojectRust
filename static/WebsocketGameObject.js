@@ -118,6 +118,7 @@ export default class WebsocketGameObjectClient {
         };
 
         this.webSocketHost.onmessage = (e) => {
+            print(e.data)
             const data = JSON.parse(e.data)
             switch (data.type) {
                 case "serverReadyForPlayer":

@@ -34,6 +34,7 @@ pub async fn ws(
                             match message_type_converted {
                                 "login" => {
                                     let server_id = typeMap.get("serverID");
+                                    println!("{}", server_id.unwrap());
                                     if let Some(serde_json::Value::String(server_id)) = server_id {
                                         if let Some(serde_json::Value::Number(player_id)) =
                                             typeMap.get("ID")
@@ -42,13 +43,32 @@ pub async fn ws(
                                                 data.serverEventBus.lock().unwrap();
                                             let to_host_sender_result = server_event_bus
                                                 .get_sender_by_id(server_id.to_string());
-                                            let (to_me_sender,from_host_receiver) = std::sync::mpsc::channel();
-                                            if let Some(host_sender) = host_sender_result {
-                                                to_host_sender.send(Message_event_bus::PlayerLogin(
-                                                    player_id.to_string(),to_me_sender
-                                                ));
+                                            let (to_me_sender, from_host_receiver) =
+                                                std::sync::mpsc::channel();
+                                            if let Some(to_host_sender) = to_host_sender_result {
+                                                to_host_sender.send(
+                                                    Message_event_bus::PlayerLogin(
+                                                        player_id.to_string(),
+                                                        to_me_sender,
+                                                    ),
+                                                );
                                             }
+                                            session
+                                                .text("{\"type\" : \"connectionAccepted\"}")
+                                                .await
+                                                .unwrap();
+                                        } else {
+                                            session
+                                                .text("{\"type\" : \"connectionRefused\"}")
+                                                .await
+                                                .unwrap();
                                         }
+                                    } else {
+                                        println!("connectoiin Refused");
+                                        session
+                                            .text("{\"type\" : \"connectionRefused\"}")
+                                            .await
+                                            .unwrap();
                                     }
                                 }
                                 _ => {}
